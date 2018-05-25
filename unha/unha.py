@@ -44,6 +44,7 @@ class Unha(object):
             raise UnhaAuthException('Authentication failed.')
         self.prompt = res.strip()
         self._send_command('terminal length 0')
+        self._send_command('terminal width 511')
 
     def disconnect(self):
         self.device.close()
