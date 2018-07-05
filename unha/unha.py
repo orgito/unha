@@ -29,7 +29,7 @@ class Unha(object):
 
     def connect(self):
         self.device = Telnet(self.host)
-        (i, obj, res) = self.device.expect([b'name:', b'user:', b'login:'])
+        (i, obj, res) = self.device.expect([b'name:', b'ser:', b'ogin:'])
         if i == -1:
             raise UnhaException('Unable to detect login prompt')
         login_prompt = obj.group()
