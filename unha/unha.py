@@ -19,13 +19,21 @@ def normalize_linefeeds(a_string):
 
 class Unha(object):
 
-    def __init__(self, host, username, password):
+    def __init__(self, host, username, password, timeout=30):
         self.device = None
         self.prompt = ''
         self.host = host
         self.username = username
         self.password = password
+        self.timeout = timeout
         self.connect()
+
+    def check_enable_mode(self):
+        self.device.write(b'\n')
+        (i, obj, res) = self.device.expect([b'#', b'>'], timeout=self.timeout)
+        if i == 0:
+            return True
+        return False
 
     def connect(self):
         self.device = Telnet(self.host)
@@ -34,20 +42,39 @@ class Unha(object):
             raise UnhaException('Unable to detect login prompt')
         login_prompt = obj.group()
         self.device.write(self.username.encode('ascii') + b'\n')
-        self.device.read_until(b'assword: ')
+        self.device.read_until(b'assword:')
         self.device.write(self.password.encode('ascii') + b'\n')
-        (i, obj, res) = self.device.expect([b'#', login_prompt])
+        (i, obj, res) = self.device.expect([b'#', b'>', login_prompt])
         if i == -1:
             raise UnhaAuthException('Authentication failed.')
-        if i == 1:
+        if i == 2:
             self.device.close()
             raise UnhaAuthException('Authentication failed.')
         self.prompt = res.strip()
-        self._send_command('terminal length 0')
-        self._send_command('terminal width 511')
+        if i == 0:
+            self._send_command('terminal length 0')
+            self._send_command('terminal width 511')
 
     def disconnect(self):
         self.device.close()
+
+    def enable(self):
+        if self.check_enable_mode():
+            return ''
+        self.device.write(b'enable\n')
+        self.device.read_until(b'assword:')
+        self.device.write(self.password.encode('ascii') + b'\n')
+        (i, obj, res) = self.device.expect([b'#', b'assword:'])
+        if i == -1:
+            raise UnhaAuthException('Enable failed.')
+        if i == 1:
+            self.device.close()
+            raise UnhaAuthException('Enable failed.')
+        self.prompt = res.splitlines()[-1].strip()
+        print(self.prompt)
+        self._send_command('terminal length 0')
+        self._send_command('terminal width 511')
+        return ''
 
     def send_command(self, cmd='', prompt=None):
         output = self._send_command(cmd, prompt).splitlines()
@@ -65,9 +92,6 @@ class Unha(object):
         output += self._send_command('end')
         return output
 
-    def enable(self):
-        return ''
-
     def _send_command(self, cmd='', prompt=None):
         if prompt is None:
             prompt = self.prompt
@@ -80,4 +104,4 @@ class Unha(object):
     def _send_config_cmd(self, cmd=None):
         if cmd is None:
             return ''
-        return self._send_command(cmd, prompt='(config)#')
+        return self._send_command(cmd, prompt=')#')
