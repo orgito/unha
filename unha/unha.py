@@ -83,7 +83,7 @@ class Unha(object):
     def send_config_set(self, config_commands=None):
         if config_commands is None:
             return ''
-        elif isinstance(config_commands, str):
+        if isinstance(config_commands, str):
             config_commands = (config_commands,)
         self._send_command('end')
         output = self._send_config_cmd('config term')
