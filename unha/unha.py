@@ -76,11 +76,25 @@ class Unha(object):
         self._send_command('terminal width 511')
         return ''
 
-    def send_command(self, cmd='', prompt=None):
+    def config_mode(self):
+        output = self._send_command('configure terminal', prompt=')#')
+        self.prompt = output.splitlines()[-1].strip().encode('ascii')
+        return output
+
+    def exit_config_mode(self):
+        output = self._send_command('end', prompt='#')
+        self.prompt = output.splitlines()[-1].strip().encode('ascii')
+        return output
+
+    def send_command(self, cmd='', prompt=None, **kwargs):
         output = self._send_command(cmd, prompt).splitlines()
         return '\n'.join(output[1:-1])
 
-    def send_config_set(self, config_commands=None):
+    def send_command_timing(self, cmd='', prompt=None, timeout=30, **kwargs):
+        output = self._send_command(cmd, prompt, timeout).splitlines()
+        return '\n'.join(output[1:-1])
+
+    def send_config_set(self, config_commands=None, **kwargs):
         if config_commands is None:
             return ''
         if isinstance(config_commands, str):
@@ -92,13 +106,13 @@ class Unha(object):
         output += self._send_command('end')
         return output
 
-    def _send_command(self, cmd='', prompt=None):
+    def _send_command(self, cmd='', prompt=None, timeout=None):
         if prompt is None:
             prompt = self.prompt
         else:
             prompt = prompt.encode('ascii')
         self.device.write(cmd.encode('ascii') + b'\n')
-        output = normalize_linefeeds(self.device.read_until(prompt).decode('ascii'))
+        output = normalize_linefeeds(self.device.read_until(prompt, timeout).decode('ascii'))
         return output
 
     def _send_config_cmd(self, cmd=None):
