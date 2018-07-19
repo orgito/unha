@@ -20,6 +20,7 @@ def normalize_linefeeds(a_string):
 class Unha(object):
 
     def __init__(self, host, username, password, timeout=30):
+        self.device_type = 'cisco_ios_unha'
         self.device = None
         self.prompt = ''
         self.host = host
@@ -71,7 +72,6 @@ class Unha(object):
             self.device.close()
             raise UnhaAuthException('Enable failed.')
         self.prompt = res.splitlines()[-1].strip()
-        print(self.prompt)
         self._send_command('terminal length 0')
         self._send_command('terminal width 511')
         return ''
