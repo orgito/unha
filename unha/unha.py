@@ -118,4 +118,4 @@ class Unha(object):
     def _send_config_cmd(self, cmd=None):
         if cmd is None:
             return ''
-        return self._send_command(cmd, prompt=')#')
+        return self._send_command(cmd + '\n', prompt=')#')

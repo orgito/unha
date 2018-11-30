@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='unha',
-    version='0.1.0',
+    version='0.1.1',
     description='A library to simplify telnet connections to Cisco IOS devices',
     long_description=open('README.rst', 'r').read(),
     author='Renato Orgito',
