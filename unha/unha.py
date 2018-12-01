@@ -38,14 +38,14 @@ class Unha(object):
 
     def connect(self):
         self.device = Telnet(self.host)
-        (i, obj, res) = self.device.expect([b'name:', b'ser:', b'ogin:'])
+        (i, obj, res) = self.device.expect([b'name:', b'ser:', b'ogin:'], timeout=self.timeout)
         if i == -1:
             raise UnhaException('Unable to detect login prompt')
         login_prompt = obj.group()
         self.device.write(self.username.encode('ascii') + b'\n')
-        self.device.read_until(b'assword:')
+        self.device.read_until(b'assword:', timeout=self.timeout)
         self.device.write(self.password.encode('ascii') + b'\n')
-        (i, obj, res) = self.device.expect([b'#', b'>', login_prompt])
+        (i, obj, res) = self.device.expect([b'#', b'>', login_prompt], timeout=self.timeout)
         if i == -1:
             raise UnhaAuthException('Authentication failed.')
         if i == 2:
@@ -63,9 +63,9 @@ class Unha(object):
         if self.check_enable_mode():
             return ''
         self.device.write(b'enable\n')
-        self.device.read_until(b'assword:')
+        self.device.read_until(b'assword:', timeout=self.timeout)
         self.device.write(self.password.encode('ascii') + b'\n')
-        (i, obj, res) = self.device.expect([b'#', b'assword:'])
+        (i, obj, res) = self.device.expect([b'#', b'assword:'], timeout=self.timeout)
         if i == -1:
             raise UnhaAuthException('Enable failed.')
         if i == 1:
