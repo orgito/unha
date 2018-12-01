@@ -107,6 +107,8 @@ class Unha(object):
         return output
 
     def _send_command(self, cmd='', prompt=None, timeout=None):
+        if timeout is None:
+            timeout = self.timeout
         if prompt is None:
             prompt = self.prompt
         else:
